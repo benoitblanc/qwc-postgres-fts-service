@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/benoitblanc/qwc-postgres-fts-service/main/schemas/qwc-postgres-fts-service.json",
+  "title": "QWC Postgres FTS Service",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "JSON Schema",
+      "description": "Reference to JSON schema of this config",
+      "type": "string",
+      "format": "uri",
+      "default": "https://raw.githubusercontent.com/benoitblanc/qwc-postgres-fts-service/main/schemas/qwc-postgres-fts-service.json"
+    },
+    "service": {
+      "title": "Service name",
+      "type": "string",
+      "const": "postgresFTSSearch"
+    },
+    "config": {
+      "title": "Config options",
+      "type": "object",
+      "properties": {
+        "search_result_limit": {
+          "description": "Result count limit per search",
+          "type": "integer",
+          "default": 50
+        }
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "type": "object",
+      "properties": {
+        "documents": {
+          "title": "Search documents",
+          "type": "array",
+          "items": {
+            "title": "Document",
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "Document name",
+                "type": "string"
+              },
+              "text_search_config": {
+                "description": "Text search configuration used for search",
+                "type": "string",
+                "default": "english"
+              },
+              "db_url": {
+                "description": "DB connection for result query",
+                "type": "string"
+              },
+              "schema": {
+                "description": "Schema to query for search",
+                "type": "string"
+              },
+              "table": {
+                "description": "Table to query for search",
+                "type": "string"
+              },
+              "primary_key": {
+                "description": "Primary key of the table to query",
+                "type": "string"
+              },
+              "columns": {
+                "description": "Attributes to query for search and display as result",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "geometry_column": {
+                "description": "Geometry column in search result table",
+                "type": "string",
+                "default": "geom"
+              }
+            },
+            "required": [
+              "name",
+              "db_url",
+              "schema",
+              "table",
+              "primary_key",
+              "display_name",
+              "columns"
+            ]
+          }
+        }
+      },
+      "required": [
+        "documents"
+      ]
+    }
+  },
+  "required": [
+    "service",
+    "config",
+    "resources"
+  ]
+}
