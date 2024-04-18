@@ -60,16 +60,18 @@ class PostgresFTSClient:
                 )
             )
             self.logger.debug(f"SQL Query : {sql}")
-            conn = self.db_engine.db_engine(document["db_url"]).connect()
             results[key] = []
-            try:
-                result = conn.execute(sql)
-                for row in result:
-                    row_result = self._feature_from_query(row, document["primary_key"])
-                    results[key].append(row_result)
-                self.logger.debug(f"SQL Result for document {key} : {results[key]}")
-            except Exception as e:
-                self.logger.error(f"Error for document {key} on query {sql}: {e}")
+            with self.db_engine.db_engine(document["db_url"]).connect() as conn:
+                try:
+                    result = conn.execute(sql)
+                    for row in result:
+                        row_result = self._feature_from_query(
+                            row, document["primary_key"]
+                        )
+                        results[key].append(row_result)
+                    self.logger.debug(f"SQL Result for document {key} : {results[key]}")
+                except Exception as e:
+                    self.logger.error(f"Error for document {key} on query {sql}: {e}")
         return results
 
     def _feature_from_query(self, row, primary_key):
