@@ -49,11 +49,11 @@ Configure environment:
 
 Start local service:
 
-    python server.py
+    python src/server.py
 
 Testing
 -------
 
 Run all tests:
 
-    python test.py
+    python src/test.py
