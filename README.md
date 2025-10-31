@@ -23,21 +23,9 @@ Service API:
 Development
 -----------
 
-Create a virtual environment:
+Install dependencies and run service:
 
-    virtualenv --python=/usr/bin/python3 --system-site-packages .venv
-
-Without system packages:
-
-    virtualenv --python=/usr/bin/python3 .venv
-
-Activate virtual environment:
-
-    source .venv/bin/activate
-
-Install requirements:
-
-    pip install -r requirements/requirements.txt
+    uv run src/server.py
 
 Set the `CONFIG_PATH` environment variable to the path containing the service config and permission files when starting this service (default: `config`).
 
@@ -47,13 +35,13 @@ Configure environment:
 
     echo FLASK_ENV=development >.flaskenv
 
-Start local service:
+With config path:
 
-    python src/server.py
+    CONFIG_PATH=/PATH/TO/CONFIGS/ uv run src/server.py
 
 Testing
 -------
 
 Run all tests:
 
-    python src/test.py
+    uv run src/test.py
