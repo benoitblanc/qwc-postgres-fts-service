@@ -14,7 +14,7 @@
     "service": {
       "title": "Service name",
       "type": "string",
-      "const": "postgresFTSSearch"
+      "const": "postgres-fts"
     },
     "config": {
       "title": "Config options",
