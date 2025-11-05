@@ -95,7 +95,6 @@
   },
   "required": [
     "service",
-    "config",
-    "resources"
+    "config"
   ]
 }
