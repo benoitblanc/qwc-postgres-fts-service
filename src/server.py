@@ -30,9 +30,9 @@ logging.getLogger().setLevel(logging.DEBUG if app.debug else logging.INFO)
 def search_handler():
     """Get or create a SearchService instance for a tenant."""
     tenant = tenant_handler.tenant()
-    handler = tenant_handler.handler("postgresFTSSearch", "postgresfts", tenant)
+    handler = tenant_handler.handler("postgresFts", "postgresfts", tenant)
     if handler is None:
-        config_handler = RuntimeConfig("postgresFTSSearch", app.logger)
+        config_handler = RuntimeConfig("postgresFts", app.logger)
         config = config_handler.tenant_config(tenant)
         handler = tenant_handler.register_handler(
             "postgresfts", tenant, PostgresFTSClient(tenant, app.logger, config)
