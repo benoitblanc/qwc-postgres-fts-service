@@ -121,32 +121,41 @@ class PostgresFTSClient:
         # collect service resources
         documents = {}
         self.logger.debug("Loading documents resources...")
-        config_db_url = self.config.get('db_url')
+        config_db_url = self.config.get("db_url")
         if config_db_url:
-            qwc_config_schema = self.config.get('qwc_config_schema', 'qwc_config')
-            fts_documents_table = self.config.get('fts_documents_table', 'fts_documents')
-            sql = sql_text("""
+            qwc_config_schema = self.config.get("qwc_config_schema", "qwc_config")
+            fts_documents_table = self.config.get(
+                "fts_documents_table", "fts_documents"
+            )
+            sql = sql_text(
+                """
                 SELECT name, text_search_config, db_url, schema, "table", primary_key, columns, geometry_column
                 FROM {table}
-            """.format(table=f'"{qwc_config_schema}"."{fts_documents_table}"'))
-            self.logger.debug(f"Query get documents resources from ConfigDB. Query {sql}")
+            """.format(
+                    table=f'"{qwc_config_schema}"."{fts_documents_table}"'
+                )
+            )
+            self.logger.debug(
+                f"Query get documents resources from ConfigDB. Query {sql}"
+            )
             try:
-                data = []
                 with self.db_engine.db_engine(config_db_url).connect() as connection:
                     result = connection.execute(sql).mappings()
                     for row in result:
                         document = {}
-                        document['name'] = row.name
-                        document['text_search_config'] = row.text_search_config
-                        document['db_url'] = row.db_url
-                        document['schema'] = row.schema
-                        document['table'] = row.table
-                        document['primary_key'] = row.primary_key
-                        document['columns'] = row.columns
-                        document['geometry_column'] = row.geometry_column
+                        document["name"] = row.name
+                        document["text_search_config"] = row.text_search_config
+                        document["db_url"] = row.db_url
+                        document["schema"] = row.schema
+                        document["table"] = row.table
+                        document["primary_key"] = row.primary_key
+                        document["columns"] = row.columns
+                        document["geometry_column"] = row.geometry_column
                         documents[document["name"]] = document
             except Exception as e:
-                self.logger.error(f"Error to get documents resources from ConfigDB. Query {sql}: {e}")
+                self.logger.error(
+                    f"Error to get documents resources from ConfigDB. Query {sql}: {e}"
+                )
                 documents = {}
             self.logger.info(f"Get documents resources from ConfigDB: {documents}")
         else:
