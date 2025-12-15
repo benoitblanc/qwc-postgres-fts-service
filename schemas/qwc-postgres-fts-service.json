@@ -20,6 +20,18 @@
       "title": "Config options",
       "type": "object",
       "properties": {
+        "config_db_url": {
+          "description": "Config DB connection URL to store FTS documents. Can be set to an empty string if resources have to be loaded from config file. Default: `postgresql:///?service=qwc_configdb`",
+          "type": "string"
+        },
+        "qwc_config_schema": {
+          "description": "The name of the DB schema which stores the qwc config. Default: `qwc_config`",
+          "type": "string"
+        },
+        "fts_documents_table": {
+          "description": "PostgreSQL table where FTS documents configurations are stored. Defaults to `fts_documents`.",
+          "type": "string"
+        },
         "search_result_limit": {
           "description": "Result count limit per search",
           "type": "integer",

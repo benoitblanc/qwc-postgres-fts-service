@@ -21,8 +21,8 @@ class PostgresFTSClient:
         self.tenant = tenant
         self.config = config
         self.default_search_limit = self.config.get("search_result_limit", 50)
-        self.resources = self.load_resources()
         self.db_engine = DatabaseEngine()
+        self.resources = self.load_resources()
 
     def search(self, searchtext):
         results = OrderedDict()
@@ -44,9 +44,9 @@ class PostgresFTSClient:
                     """
                 SELECT {columns}
                 FROM "{schema}"."{table}"
-                WHERE ts @@ to_tsquery('{text_search_config}', '{search_string}')
+                WHERE ts @@ websearch_to_tsquery('{text_search_config}', '{search_string}')
                 GROUP BY "{primary_key}"
-                ORDER BY ts_rank(ts, to_tsquery('{text_search_config}', '{search_string}')) DESC
+                ORDER BY ts_rank(ts, websearch_to_tsquery('{text_search_config}', '{search_string}')) DESC
                 LIMIT {search_result_limit};
             """
                 ).format(
@@ -63,7 +63,7 @@ class PostgresFTSClient:
             results[key] = []
             with self.db_engine.db_engine(document["db_url"]).connect() as conn:
                 try:
-                    result = conn.execute(sql)
+                    result = conn.execute(sql).mappings()
                     for row in result:
                         row_result = self._feature_from_query(
                             row, document["primary_key"]
@@ -80,23 +80,22 @@ class PostgresFTSClient:
         :param obj row: Row result from query
         """
         result = OrderedDict()
-        for attr in row._mapping:
-            value = row[attr]
-            if attr == "json_geom":
-                geom = json.loads(value)
-            elif attr == "bbox":
-                bbox = self.parse_box2d(value)
-            elif attr == primary_key:
+        for key, val in row.items():
+            if key == "json_geom":
+                geom = json.loads(val)
+            elif key == "bbox":
+                bbox = self.parse_box2d(val)
+            elif key == primary_key:
                 # Ensure UUID primary key is JSON serializable
-                pk = str(value)
-            elif isinstance(value, date):
-                result[attr] = value.isoformat()
-            elif isinstance(value, Decimal):
-                result[attr] = float(value)
-            elif isinstance(value, UUID):
-                result[attr] = str(value)
+                pk = str(val)
+            elif isinstance(val, date):
+                result[key] = val.isoformat()
+            elif isinstance(val, Decimal):
+                result[key] = float(val)
+            elif isinstance(val, UUID):
+                result[key] = str(val)
             else:
-                result[attr] = value
+                result[key] = val
 
         return {
             "type": "Feature",
@@ -121,8 +120,38 @@ class PostgresFTSClient:
         """
         # collect service resources
         documents = {}
-        for document in self.config.resources().get("documents", []):
-            documents[document["name"]] = document
+        self.logger.debug("Loading documents resources...")
+        config_db_url = self.config.get('db_url')
+        if config_db_url:
+            qwc_config_schema = self.config.get('qwc_config_schema', 'qwc_config')
+            fts_documents_table = self.config.get('fts_documents_table', 'fts_documents')
+            sql = sql_text("""
+                SELECT name, text_search_config, db_url, schema, "table", primary_key, columns, geometry_column
+                FROM {table}
+            """.format(table=f'"{qwc_config_schema}"."{fts_documents_table}"'))
+            self.logger.debug(f"Query get documents resources from ConfigDB. Query {sql}")
+            try:
+                data = []
+                with self.db_engine.db_engine(config_db_url).connect() as connection:
+                    result = connection.execute(sql).mappings()
+                    for row in result:
+                        document = {}
+                        document['name'] = row.name
+                        document['text_search_config'] = row.text_search_config
+                        document['db_url'] = row.db_url
+                        document['schema'] = row.schema
+                        document['table'] = row.table
+                        document['primary_key'] = row.primary_key
+                        document['columns'] = row.columns
+                        document['geometry_column'] = row.geometry_column
+                        documents[document["name"]] = document
+            except Exception as e:
+                self.logger.error(f"Error to get documents resources from ConfigDB. Query {sql}: {e}")
+                documents = {}
+            self.logger.info(f"Get documents resources from ConfigDB: {documents}")
+        else:
+            for document in self.config.resources().get("documents", []):
+                documents[document["name"]] = document
 
         return {"documents": documents}
 
