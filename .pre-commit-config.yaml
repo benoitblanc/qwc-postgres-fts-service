@@ -49,3 +49,8 @@ repos:
           [
             "--config=setup.cfg",
           ]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.21.2
+    hooks:
+    -   id: pyupgrade
