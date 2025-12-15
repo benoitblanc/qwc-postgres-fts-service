@@ -63,7 +63,7 @@ class PostgresFTSClient:
             results[key] = []
             with self.db_engine.db_engine(document["db_url"]).connect() as conn:
                 try:
-                    result = conn.execute(sql)
+                    result = conn.execute(sql).mappings()
                     for row in result:
                         row_result = self._feature_from_query(
                             row, document["primary_key"]
@@ -80,23 +80,22 @@ class PostgresFTSClient:
         :param obj row: Row result from query
         """
         result = OrderedDict()
-        for attr in row._mapping:
-            value = row[attr]
-            if attr == "json_geom":
-                geom = json.loads(value)
-            elif attr == "bbox":
-                bbox = self.parse_box2d(value)
-            elif attr == primary_key:
+        for key, val in row.items():
+            if key == "json_geom":
+                geom = json.loads(val)
+            elif key == "bbox":
+                bbox = self.parse_box2d(val)
+            elif key == primary_key:
                 # Ensure UUID primary key is JSON serializable
-                pk = str(value)
-            elif isinstance(value, date):
-                result[attr] = value.isoformat()
-            elif isinstance(value, Decimal):
-                result[attr] = float(value)
-            elif isinstance(value, UUID):
-                result[attr] = str(value)
+                pk = str(val)
+            elif isinstance(val, date):
+                result[key] = val.isoformat()
+            elif isinstance(val, Decimal):
+                result[key] = float(val)
+            elif isinstance(val, UUID):
+                result[key] = str(val)
             else:
-                result[attr] = value
+                result[key] = val
 
         return {
             "type": "Feature",
