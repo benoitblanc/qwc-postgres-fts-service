@@ -44,9 +44,9 @@ class PostgresFTSClient:
                     """
                 SELECT {columns}
                 FROM "{schema}"."{table}"
-                WHERE ts @@ to_tsquery('{text_search_config}', '{search_string}')
+                WHERE ts @@ websearch_to_tsquery('{text_search_config}', '{search_string}')
                 GROUP BY "{primary_key}"
-                ORDER BY ts_rank(ts, to_tsquery('{text_search_config}', '{search_string}')) DESC
+                ORDER BY ts_rank(ts, websearch_to_tsquery('{text_search_config}', '{search_string}')) DESC
                 LIMIT {search_result_limit};
             """
                 ).format(
